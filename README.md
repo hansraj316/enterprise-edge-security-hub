@@ -1,5 +1,9 @@
 # EdgeShield - Enterprise Edge Security Hub
 
+[![Indian Avengers](https://img.shields.io/badge/Managed%20By-Indian%20Avengers-orange?style=flat-square&logo=gitbook)](https://github.com/hansraj316/mission-control-openclaw)
+[![Next.js](https://img.shields.io/badge/Next.js%2015-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
+
 **EdgeShield** is a next-generation security platform built for Indian mid-market businesses. It delivers enterprise-grade cloud-native security integrated with edge computing to provide real-time threat detection and mitigation.
 
 ## Features
