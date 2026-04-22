@@ -11,7 +11,8 @@ import {
   LogOut,
   Zap,
   Globe,
-  Database
+  Database,
+  ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const menuItems = [
   { name: "Threat Analysis", href: "/threats", icon: AlertTriangle },
   { name: "Database", href: "/database", icon: Database },
   { name: "Real-time Edge", href: "/realtime", icon: Zap },
+  { name: "Assessment", href: "/assessment", icon: ClipboardCheck },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

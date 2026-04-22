@@ -16,6 +16,31 @@
 1. `npm install`
 2. `npm run dev`
 
+## Environment Variables
+Create a `.env.local` file:
+
+- `CONTACT_WEBHOOK_URL` (required for lead delivery)
+- `LEAD_WEBHOOK_MAX_ATTEMPTS` (optional, default `3`)
+- `LEAD_WEBHOOK_RETRY_BASE_MS` (optional, default `500`)
+- `NEXT_PUBLIC_ASSESSMENT_BOOKING_URL` (optional, defaults to Calendly root)
+
+## Lead Payload Schema (`POST /api/leads`)
+Required fields:
+- `fullName`, `workEmail` (must be work domain), `company`, `role`
+- `companySize`, `assessmentFocus`, `timeline`, `sourcePage`
+
+Numeric inputs:
+- `monthlyTrafficGb`, `annualSecuritySpendInr`, `estimatedIncidentsPerMonth`
+- `estimatedAnnualSavingsInr`, `estimatedRoiPercent`
+
+Anti-spam fields:
+- `website` (honeypot, must be empty)
+- `startedAt` (submission time trap)
+
+Server-side wrapper sent to webhook:
+- `type: "enterprise_assessment_lead"`
+- `submittedAt`, `ip`, `userAgent`, `payload`
+
 ## Documentation
 - [Architecture Overview](./docs/architecture/overview.md)
 - [Security Strategy](./docs/security/strategy.md)

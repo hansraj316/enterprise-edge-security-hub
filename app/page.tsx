@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Zap, 
   ShieldAlert, 
@@ -16,20 +17,15 @@ import { StatCard } from "@/components/StatCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const initialEvents: LogEntry[] = [];
-const eventTemplates: any[] = [];
-
 import { TrafficChart } from "@/components/TrafficChart";
 import { ThreatMap } from "@/components/ThreatMap";
 import { edgeShield, LogEntry } from "@/lib/edge-shield";
+import { trackEvent } from "@/lib/analytics";
 
 export default function DashboardPage() {
-  const [events, setEvents] = useState<LogEntry[]>([]);
+  const [events, setEvents] = useState<LogEntry[]>(() => edgeShield.getRecentLogs(10));
 
   useEffect(() => {
-    // Initial logs
-    setEvents(edgeShield.getRecentLogs(10));
-
     const interval = setInterval(() => {
       const nodes = edgeShield.getNodeStats();
       const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
@@ -50,6 +46,23 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 pb-10">
+      <section className="glass rounded-2xl border border-blue-500/20 p-6 md:p-8 bg-gradient-to-r from-blue-900/20 to-indigo-900/20">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-400">Enterprise Security Assessment</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">Get your Edge ROI and custom hardening plan</h2>
+            <p className="text-slate-300 text-sm mt-2">Calculate savings, qualify in minutes, and book a technical assessment.</p>
+          </div>
+          <Link
+            href="/assessment"
+            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "hero" })}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
+          >
+            Start Assessment
+          </Link>
+        </div>
+      </section>
+
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
@@ -132,7 +145,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/30">
             <AnimatePresence initial={false}>
-              {events.map((event, idx) => (
+              {events.map((event) => (
                 <motion.div 
                   key={event.id}
                   initial={{ opacity: 0, height: 0 }}
@@ -181,6 +194,22 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <section className="glass rounded-2xl p-6 border border-emerald-500/20 bg-gradient-to-r from-emerald-900/10 to-blue-900/10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-white">Enterprise Pricing Fit Check</h3>
+            <p className="text-sm text-slate-400">See if EdgeShield can cut your security spend by up to 67% with better SLA coverage.</p>
+          </div>
+          <Link
+            href="/assessment"
+            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "pricing" })}
+            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 transition-colors"
+          >
+            Check ROI & Pricing
+          </Link>
+        </div>
+      </section>
 
       {/* Analytics Insight */}
       <div className="glass rounded-2xl p-6 border border-blue-500/10 bg-gradient-to-br from-blue-900/10 to-indigo-900/10 relative overflow-hidden group">

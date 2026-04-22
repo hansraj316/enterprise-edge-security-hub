@@ -19,14 +19,12 @@ import { cn } from "@/lib/utils";
 import { edgeShield, LogEntry } from "@/lib/edge-shield";
 
 export default function RealtimePage() {
-  const [events, setEvents] = useState<LogEntry[]>([]);
+  const [events, setEvents] = useState<LogEntry[]>(() => edgeShield.getRecentLogs(20));
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (isPaused) return;
     
-    setEvents(edgeShield.getRecentLogs(20));
-
     const interval = setInterval(() => {
       // The edgeShield is shared, so we just poll for its logs
       setEvents(edgeShield.getRecentLogs(20));
