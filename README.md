@@ -25,3 +25,8 @@
 - **Project Lead**: Master Hans
 - **Principal Engineer**: Raj (Indian Avengers)
 - **Research**: Anusandhan (Research Lab)
+
+
+## Daily TPM delivery update (2026-04-22)
+- Functional: Launch policy compliance dashboard with drift detection by edge cluster
+- Non-functional: Implement signed release artifacts and SBOM export in CI pipeline
