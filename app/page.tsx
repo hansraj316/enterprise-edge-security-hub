@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, FormEvent } from "react";
 import Link from "next/link";
-import { 
-  Zap, 
-  ShieldAlert, 
-  Activity, 
-  Server, 
+import {
+  Zap,
+  ShieldAlert,
+  Activity,
+  Server,
   MoreHorizontal,
   ChevronRight,
   ShieldCheck,
   AlertTriangle,
   Info,
   BadgeIndianRupee,
-  Calculator
+  Calculator,
+  CalendarCheck2,
 } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +24,7 @@ import { TrafficChart } from "@/components/TrafficChart";
 import { ThreatMap } from "@/components/ThreatMap";
 import { edgeShield, LogEntry } from "@/lib/edge-shield";
 import { trackEvent } from "@/lib/analytics";
+import { isWorkEmail, LeadPayload } from "@/lib/lead";
 
 const INDIA_PLANS = [
   {
@@ -42,21 +44,124 @@ const INDIA_PLANS = [
   },
 ];
 
+const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "sales@example.com";
+
+type QuickLeadForm = Pick<LeadPayload, "fullName" | "workEmail" | "company">;
+
 export default function DashboardPage() {
   const [events, setEvents] = useState<LogEntry[]>(() => edgeShield.getRecentLogs(10));
+  const [teamSize, setTeamSize] = useState(80);
+  const [toolingCostInr, setToolingCostInr] = useState(180000);
+  const [selectedPlanName, setSelectedPlanName] = useState(INDIA_PLANS[1].name);
+  const [quickLead, setQuickLead] = useState<QuickLeadForm>({ fullName: "", workEmail: "", company: "" });
+  const [leadStatus, setLeadStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [leadMessage, setLeadMessage] = useState("");
+
+  const selectedPlan = INDIA_PLANS.find((plan) => plan.name === selectedPlanName) ?? INDIA_PLANS[1];
+
+  const roi = useMemo(() => {
+    const teamSavingsFactor = Math.min(0.42, 0.16 + teamSize * 0.0015);
+    const platformSavings = Math.round(toolingCostInr * teamSavingsFactor);
+    const operationsSavings = teamSize * 1200;
+    const selectedPlanPrice = Number(selectedPlan.price.replace(/[^\d]/g, ""));
+    const planEfficiencyDelta = Math.max(0, toolingCostInr - selectedPlanPrice);
+    const monthlySavings = Math.max(0, platformSavings + operationsSavings + Math.round(planEfficiencyDelta * 0.35));
+    const roiPercent = Math.round((monthlySavings / Math.max(toolingCostInr, 1)) * 100);
+
+    return {
+      monthlySavings,
+      annualSavings: monthlySavings * 12,
+      roiPercent,
+    };
+  }, [teamSize, toolingCostInr, selectedPlan]);
+
+  function onRoiCalculate() {
+    trackEvent("roi_calculated", {
+      sourcePage: "/",
+      selectedPlan: selectedPlan.name,
+      teamSize,
+      currentToolingCostInr: toolingCostInr,
+      estimatedMonthlySavingsInr: roi.monthlySavings,
+      estimatedRoiPercent: roi.roiPercent,
+    });
+  }
+
+  async function onQuickBookDemo(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!quickLead.fullName || !quickLead.company) {
+      setLeadStatus("error");
+      setLeadMessage("Enter name and company to continue.");
+      return;
+    }
+
+    if (!isWorkEmail(quickLead.workEmail)) {
+      setLeadStatus("error");
+      setLeadMessage("Use your work email.");
+      return;
+    }
+
+    const payload: LeadPayload = {
+      fullName: quickLead.fullName,
+      workEmail: quickLead.workEmail,
+      company: quickLead.company,
+      role: "Security Lead",
+      companySize: teamSize <= 50 ? "11-50" : teamSize <= 200 ? "51-200" : teamSize <= 1000 ? "201-1000" : "1000+",
+      monthlyTrafficGb: 300,
+      annualSecuritySpendInr: toolingCostInr * 12,
+      estimatedIncidentsPerMonth: 2,
+      estimatedAnnualSavingsInr: roi.annualSavings,
+      estimatedRoiPercent: roi.roiPercent,
+      assessmentFocus: "Managed WAF + DDoS",
+      timeline: "This quarter",
+      notes: `Quick home CTA lead | Plan: ${selectedPlan.name} | Team size: ${teamSize} | Monthly cost: ₹${toolingCostInr.toLocaleString("en-IN")} | Est monthly savings: ₹${roi.monthlySavings.toLocaleString("en-IN")}`,
+      sourcePage: "/",
+      referral: "Homepage",
+      website: "",
+      startedAt: new Date(Date.now() - 10000).toISOString(),
+    };
+
+    setLeadStatus("submitting");
+    setLeadMessage("");
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("lead_failed");
+      }
+
+      trackEvent("lead_submitted", {
+        sourcePage: "/",
+        selectedPlan: selectedPlan.name,
+        teamSize,
+        estimatedMonthlySavingsInr: roi.monthlySavings,
+      });
+
+      setLeadStatus("success");
+      setLeadMessage("Demo request received. We'll reach out shortly.");
+    } catch {
+      setLeadStatus("error");
+      setLeadMessage(`Lead endpoint unavailable. Use fallback email: ${SALES_EMAIL}`);
+    }
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
       const nodes = edgeShield.getNodeStats();
       const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-      
+
       // Simulate traffic with random IPs and payloads
       const ips = ["192.168.1.1", "45.12.33.102", "103.21.11.45", "112.55.22.90", "203.44.11.23"];
       const payloads = ["SELECT * FROM users", "<script>alert(1)</script>", "../../etc/passwd", "normal traffic", "another normal request"];
-      
+
       const randomIp = ips[Math.floor(Math.random() * ips.length)];
       const randomPayload = payloads[Math.floor(Math.random() * payloads.length)];
-      
+
       edgeShield.processRequest(randomIp, randomNode.id, randomPayload);
       setEvents(edgeShield.getRecentLogs(10));
     }, 5000);
@@ -85,36 +190,36 @@ export default function DashboardPage() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Edge Traffic" 
-          value="1.24 TB" 
-          subValue="+12.5%" 
-          trend="up" 
-          icon={Activity} 
+        <StatCard
+          title="Total Edge Traffic"
+          value="1.24 TB"
+          subValue="+12.5%"
+          trend="up"
+          icon={Activity}
           color="blue"
         />
-        <StatCard 
-          title="Threats Blocked" 
-          value="45,201" 
-          subValue="+8.2%" 
-          trend="up" 
-          icon={ShieldAlert} 
+        <StatCard
+          title="Threats Blocked"
+          value="45,201"
+          subValue="+8.2%"
+          trend="up"
+          icon={ShieldAlert}
           color="rose"
         />
-        <StatCard 
-          title="Active Edge Nodes" 
-          value="128" 
-          subValue="Stable" 
-          trend="neutral" 
-          icon={Server} 
+        <StatCard
+          title="Active Edge Nodes"
+          value="128"
+          subValue="Stable"
+          trend="neutral"
+          icon={Server}
           color="emerald"
         />
-        <StatCard 
-          title="Mean Anomaly Score" 
-          value="0.12" 
-          subValue="-14.2%" 
-          trend="down" 
-          icon={Zap} 
+        <StatCard
+          title="Mean Anomaly Score"
+          value="0.12"
+          subValue="-14.2%"
+          trend="down"
+          icon={Zap}
           color="amber"
         />
       </div>
@@ -166,7 +271,7 @@ export default function DashboardPage() {
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/30">
             <AnimatePresence initial={false}>
               {events.map((event) => (
-                <motion.div 
+                <motion.div
                   key={event.id}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -175,29 +280,33 @@ export default function DashboardPage() {
                   className="px-6 py-4 hover:bg-slate-800/20 transition-colors group cursor-pointer overflow-hidden"
                 >
                   <div className="flex items-start gap-4">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center mt-1 shrink-0",
-                      event.type === 'blocked' ? "bg-rose-500/10 text-rose-500" : 
-                      event.type === 'anomaly' ? "bg-amber-500/10 text-amber-500" : 
-                      "bg-emerald-500/10 text-emerald-500"
-                    )}>
-                      {event.type === 'blocked' ? <ShieldAlert className="w-4 h-4" /> : 
-                       event.type === 'anomaly' ? <AlertTriangle className="w-4 h-4" /> : 
-                       <ShieldCheck className="w-4 h-4" />}
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center mt-1 shrink-0",
+                        event.type === "blocked" ? "bg-rose-500/10 text-rose-500" : event.type === "anomaly" ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500",
+                      )}
+                    >
+                      {event.type === "blocked" ? (
+                        <ShieldAlert className="w-4 h-4" />
+                      ) : event.type === "anomaly" ? (
+                        <AlertTriangle className="w-4 h-4" />
+                      ) : (
+                        <ShieldCheck className="w-4 h-4" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <p className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors truncate pr-2">{event.title}</p>
-                        <span className="text-[10px] text-slate-600 font-medium uppercase tracking-wider shrink-0">{new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                        <span className="text-[10px] text-slate-600 font-medium uppercase tracking-wider shrink-0">{new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
                       <p className="text-xs text-slate-500 mb-2 truncate">{event.ip} • {event.node}</p>
                       <div className="flex items-center gap-1.5">
-                        <div className={cn(
-                          "w-1.5 h-1.5 rounded-full",
-                          event.severity === 'high' ? "bg-rose-500" : 
-                          event.severity === 'medium' ? "bg-amber-500" : 
-                          "bg-emerald-500"
-                        )} />
+                        <div
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            event.severity === "high" ? "bg-rose-500" : event.severity === "medium" ? "bg-amber-500" : "bg-emerald-500",
+                          )}
+                        />
                         <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{event.severity} SEVERITY</span>
                       </div>
                     </div>
@@ -241,20 +350,45 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold text-white">{plan.name}</p>
               <p className="text-lg font-bold text-emerald-400 mt-1">{plan.price}</p>
               <ul className="mt-2 text-xs text-slate-300 space-y-1 list-disc list-inside">
-                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-slate-300 inline-flex items-center gap-2"><Calculator className="w-4 h-4 text-blue-400" />Use team size + current tooling cost to estimate monthly savings.</p>
-          <Link
-            href="/assessment"
-            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "india_pricing" })}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
-          >
-            Book Demo
-          </Link>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 space-y-3">
+            <p className="text-sm text-slate-300 inline-flex items-center gap-2"><Calculator className="w-4 h-4 text-blue-400" />ROI calculator (monthly)</p>
+            <label className="text-xs text-slate-400">Team size</label>
+            <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" type="number" min={1} value={teamSize} onChange={(e) => setTeamSize(Number(e.target.value) || 1)} />
+            <label className="text-xs text-slate-400">Current tooling cost per month (INR)</label>
+            <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" type="number" min={0} value={toolingCostInr} onChange={(e) => setToolingCostInr(Number(e.target.value) || 0)} />
+            <label className="text-xs text-slate-400">Plan</label>
+            <select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" value={selectedPlan.name} onChange={(e) => setSelectedPlanName(e.target.value)}>
+              {INDIA_PLANS.map((plan) => (
+                <option key={plan.name} value={plan.name}>{plan.name}</option>
+              ))}
+            </select>
+            <button onClick={onRoiCalculate} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors">Calculate Savings</button>
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <p className="text-xs text-emerald-300">Estimated monthly savings</p>
+              <p className="text-2xl font-bold text-white">₹{roi.monthlySavings.toLocaleString("en-IN")}</p>
+              <p className="text-xs text-slate-400">Annualized: ₹{roi.annualSavings.toLocaleString("en-IN")} • ROI: {roi.roiPercent}%</p>
+            </div>
+          </div>
+
+          <form onSubmit={onQuickBookDemo} className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 space-y-3">
+            <p className="text-sm text-slate-300">Book Demo</p>
+            <input required placeholder="Full name" value={quickLead.fullName} onChange={(e) => setQuickLead({ ...quickLead, fullName: e.target.value })} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" />
+            <input required type="email" placeholder="Work email" value={quickLead.workEmail} onChange={(e) => setQuickLead({ ...quickLead, workEmail: e.target.value })} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" />
+            <input required placeholder="Company" value={quickLead.company} onChange={(e) => setQuickLead({ ...quickLead, company: e.target.value })} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" />
+            <button disabled={leadStatus === "submitting"} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors disabled:opacity-50">
+              <CalendarCheck2 className="w-4 h-4" /> {leadStatus === "submitting" ? "Submitting..." : "Book Demo"}
+            </button>
+            <Link href={`mailto:${SALES_EMAIL}?subject=Book%20EdgeShield%20Demo&body=Hi%20team%2C%20I%20want%20to%20book%20a%20demo.`} className="inline-flex text-xs text-emerald-300 hover:text-emerald-200">Fallback: email sales</Link>
+            {leadMessage && <p className={`text-xs ${leadStatus === "success" ? "text-emerald-300" : "text-amber-300"}`}>{leadMessage}</p>}
+          </form>
         </div>
       </section>
 

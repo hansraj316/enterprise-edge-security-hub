@@ -11,7 +11,26 @@
 - **AI Anomaly Detection**: Proactive zero-day attack prevention.
 - **Premium Dashboard**: Real-time visualization of security events.
 - **India Pricing + ROI**: 3 INR pricing tiers and a monthly savings calculator.
-- **Lead Capture CTA**: "Book Demo" submits to `/api/leads` with mailto fallback.
+- **Lead Capture CTA**: Home `Book Demo` posts to `/api/leads`, with mailto fallback.
+
+## Landing Conversion Module (India)
+Primary landing (`/`) now includes:
+- 3 India-specific plans in INR (`Starter SOC`, `Growth Shield`, `Enterprise Fortress`)
+- On-page monthly ROI calculator based on:
+  - Team size
+  - Current monthly tooling cost (INR)
+  - Selected plan
+- Quick lead form (`Book Demo`) wired to `POST /api/leads`
+- Safe fallback CTA to sales email when lead endpoint is unavailable
+
+### Screenshot
+![India pricing + ROI section on home](./public/images/india-pricing-roi-home.png)
+
+### Pricing and ROI rationale
+- INR-localized pricing reduces buyer friction for India-based procurement teams.
+- 3-tier ladder maps cleanly to SMB-midmarket-enterprise buyer maturity.
+- ROI estimate combines platform consolidation savings, operations savings, and plan efficiency delta to give a directional monthly value for security leaders.
+- Homepage lead capture shortens time-to-contact versus forcing full-page funnel traversal.
 
 ## India Pricing Strategy
 The assessment flow is optimized for Indian enterprise buyers with transparent monthly pricing:
@@ -28,7 +47,7 @@ The assessment flow is optimized for Indian enterprise buyers with transparent m
   - Compliance and audit support
   - Custom SLA
 
-ROI model inputs (assessment page):
+ROI model inputs:
 - Team size
 - Current tooling cost per month (INR)
 - Selected plan
@@ -51,7 +70,7 @@ Create a `.env.local` file:
 - `NEXT_PUBLIC_SALES_EMAIL` (optional, used by safe mailto fallback, default `sales@example.com`)
 
 ## Usage Notes (Pricing + Demo CTA)
-- Home page (`/`) includes a concise India pricing + ROI teaser with a `Book Demo` CTA.
+- Home page (`/`) includes full India pricing cards, ROI calculator, and quick lead-capture demo form.
 - Assessment page (`/assessment`) contains:
   - Full INR pricing cards (3 plans)
   - Monthly ROI calculator (team size + current tooling cost)
@@ -84,7 +103,6 @@ Server-side wrapper sent to webhook:
 - **Project Lead**: Master Hans
 - **Principal Engineer**: Raj (Indian Avengers)
 - **Research**: Anusandhan (Research Lab)
-
 
 ## Daily TPM delivery update (2026-04-22)
 - Functional: Launch policy compliance dashboard with drift detection by edge cluster
