@@ -10,7 +10,32 @@
 - **Global Edge Network**: Low-latency threat interception.
 - **AI Anomaly Detection**: Proactive zero-day attack prevention.
 - **Premium Dashboard**: Real-time visualization of security events.
-- **Cost Efficiency**: 67% price savings over traditional hardware-based solutions.
+- **India Pricing + ROI**: 3 INR pricing tiers and a monthly savings calculator.
+- **Lead Capture CTA**: "Book Demo" submits to `/api/leads` with mailto fallback.
+
+## India Pricing Strategy
+The assessment flow is optimized for Indian enterprise buyers with transparent monthly pricing:
+- **Starter SOC**: `₹69,999/month`
+  - Managed WAF + bot defense
+  - 24x7 SOC triage
+  - Monthly risk reporting
+- **Growth Shield**: `₹1,49,999/month`
+  - DDoS and API protection
+  - SIEM integrations
+  - Priority response SLA
+- **Enterprise Fortress**: `₹3,29,999/month`
+  - Dedicated security architect
+  - Compliance and audit support
+  - Custom SLA
+
+ROI model inputs (assessment page):
+- Team size
+- Current tooling cost per month (INR)
+- Selected plan
+
+Outputs:
+- Estimated monthly savings
+- Annualized savings and ROI percentage
 
 ## Getting Started
 1. `npm install`
@@ -23,6 +48,15 @@ Create a `.env.local` file:
 - `LEAD_WEBHOOK_MAX_ATTEMPTS` (optional, default `3`)
 - `LEAD_WEBHOOK_RETRY_BASE_MS` (optional, default `500`)
 - `NEXT_PUBLIC_ASSESSMENT_BOOKING_URL` (optional, defaults to Calendly root)
+- `NEXT_PUBLIC_SALES_EMAIL` (optional, used by safe mailto fallback, default `sales@example.com`)
+
+## Usage Notes (Pricing + Demo CTA)
+- Home page (`/`) includes a concise India pricing + ROI teaser with a `Book Demo` CTA.
+- Assessment page (`/assessment`) contains:
+  - Full INR pricing cards (3 plans)
+  - Monthly ROI calculator (team size + current tooling cost)
+  - Lead form that posts to `POST /api/leads`
+  - Mailto fallback CTA if endpoint/webhook is unavailable
 
 ## Lead Payload Schema (`POST /api/leads`)
 Required fields:

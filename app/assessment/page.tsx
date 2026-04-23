@@ -2,13 +2,54 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
-import { Calculator, CalendarCheck2, ShieldCheck } from "lucide-react";
+import { Calculator, CalendarCheck2, ShieldCheck, BadgeIndianRupee } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { isWorkEmail, LeadPayload } from "@/lib/lead";
 
 const BOOKING_URL = process.env.NEXT_PUBLIC_ASSESSMENT_BOOKING_URL ?? "https://calendly.com";
+const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "sales@example.com";
 
 type LeadForm = Omit<LeadPayload, "estimatedAnnualSavingsInr" | "estimatedRoiPercent">;
+
+type PricingPlan = {
+  name: string;
+  monthlyPriceInr: number;
+  idealFor: string;
+  features: string[];
+};
+
+const PRICING_PLANS: PricingPlan[] = [
+  {
+    name: "Starter SOC",
+    monthlyPriceInr: 69999,
+    idealFor: "Fast-moving teams up to 50 members",
+    features: [
+      "Managed WAF and bot mitigation",
+      "24x7 alerting with SOC triage",
+      "Monthly risk and posture review",
+    ],
+  },
+  {
+    name: "Growth Shield",
+    monthlyPriceInr: 149999,
+    idealFor: "Scaling teams with multi-region traffic",
+    features: [
+      "Everything in Starter SOC",
+      "DDoS burst protection + API security",
+      "SIEM integrations and playbook tuning",
+    ],
+  },
+  {
+    name: "Enterprise Fortress",
+    monthlyPriceInr: 329999,
+    idealFor: "Large enterprises with strict compliance",
+    features: [
+      "Everything in Growth Shield",
+      "Dedicated security architect",
+      "Custom SLA, audit support, executive reporting",
+    ],
+  },
+];
 
 const initialForm: LeadForm = {
   fullName: "",
@@ -30,22 +71,34 @@ const initialForm: LeadForm = {
 
 export default function AssessmentPage() {
   const [form, setForm] = useState<LeadForm>(initialForm);
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlan>(PRICING_PLANS[1]);
+  const [teamSize, setTeamSize] = useState(120);
+  const [currentToolingCostInr, setCurrentToolingCostInr] = useState(250000);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   const roi = useMemo(() => {
-    const optimizedAnnualSpend = form.annualSecuritySpendInr * 0.68;
-    const riskReduction = form.estimatedIncidentsPerMonth * 12 * 75000;
-    const annualSavings = Math.round(form.annualSecuritySpendInr - optimizedAnnualSpend + riskReduction);
-    const roiPercent = Math.round((annualSavings / Math.max(form.annualSecuritySpendInr, 1)) * 100);
-    return { annualSavings, roiPercent };
-  }, [form.annualSecuritySpendInr, form.estimatedIncidentsPerMonth]);
+    const teamSavingsFactor = Math.min(0.42, 0.16 + teamSize * 0.0015);
+    const platformSavings = Math.round(currentToolingCostInr * teamSavingsFactor);
+    const operationsSavings = teamSize * 1200;
+    const planEfficiencyDelta = Math.max(0, currentToolingCostInr - selectedPlan.monthlyPriceInr);
+    const monthlySavings = Math.max(0, platformSavings + operationsSavings + Math.round(planEfficiencyDelta * 0.35));
+    const roiPercent = Math.round((monthlySavings / Math.max(currentToolingCostInr, 1)) * 100);
+
+    return {
+      monthlySavings,
+      annualSavings: monthlySavings * 12,
+      roiPercent,
+    };
+  }, [currentToolingCostInr, selectedPlan.monthlyPriceInr, teamSize]);
 
   function onRoiCalculate() {
     trackEvent("roi_calculated", {
-      estimatedAnnualSavingsInr: roi.annualSavings,
+      selectedPlan: selectedPlan.name,
+      teamSize,
+      currentToolingCostInr,
+      estimatedMonthlySavingsInr: roi.monthlySavings,
       estimatedRoiPercent: roi.roiPercent,
-      companySize: form.companySize,
     });
   }
 
@@ -69,8 +122,18 @@ export default function AssessmentPage() {
 
     const payload: LeadPayload = {
       ...form,
+      annualSecuritySpendInr: currentToolingCostInr * 12,
       estimatedAnnualSavingsInr: roi.annualSavings,
       estimatedRoiPercent: roi.roiPercent,
+      notes: [
+        `Plan: ${selectedPlan.name}`,
+        `Team size: ${teamSize}`,
+        `Current monthly tooling cost: ₹${currentToolingCostInr.toLocaleString("en-IN")}`,
+        `Estimated monthly savings: ₹${roi.monthlySavings.toLocaleString("en-IN")}`,
+        form.notes?.trim() ? `Additional notes: ${form.notes.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | "),
     };
 
     try {
@@ -82,21 +145,23 @@ export default function AssessmentPage() {
 
       if (!res.ok) {
         setStatus("error");
-        setMessage("Could not submit right now. Please book directly and our team will follow up.");
+        setMessage(`Could not submit right now. Use Book Demo fallback: ${SALES_EMAIL}`);
         return;
       }
 
       trackEvent("lead_submitted", {
         company: form.company,
         companySize: form.companySize,
-        estimatedRoiPercent: roi.roiPercent,
+        selectedPlan: selectedPlan.name,
+        teamSize,
+        estimatedMonthlySavingsInr: roi.monthlySavings,
       });
 
       setStatus("success");
-      setMessage("Thanks. Your assessment request is in. You can now book a slot below.");
+      setMessage("Thanks. Your demo request is in. You can also book a slot below.");
     } catch {
       setStatus("error");
-      setMessage("Network issue while submitting. Please use Book Assessment below.");
+      setMessage(`Network issue while submitting. Use Book Demo fallback: ${SALES_EMAIL}`);
     }
   }
 
@@ -104,26 +169,54 @@ export default function AssessmentPage() {
     <div className="mx-auto max-w-6xl space-y-8">
       <section className="rounded-2xl border border-slate-800/50 glass p-8">
         <h1 className="text-3xl font-bold text-white">Enterprise Security Assessment</h1>
-        <p className="mt-2 text-slate-400">Estimate ROI in 30 seconds, then submit your qualification details.</p>
+        <p className="mt-2 text-slate-400">India-focused pricing, quick ROI estimate, and direct lead capture for your security demo.</p>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800/50 glass p-6 space-y-5">
+        <div className="flex items-center gap-2 text-blue-400"><BadgeIndianRupee className="w-4 h-4" /> India Pricing Plans</div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {PRICING_PLANS.map((plan) => {
+            const active = selectedPlan.name === plan.name;
+            return (
+              <button
+                key={plan.name}
+                type="button"
+                onClick={() => setSelectedPlan(plan)}
+                className={`text-left rounded-xl border p-4 transition ${active ? "border-blue-500 bg-blue-500/10" : "border-slate-700 bg-slate-900/30 hover:border-slate-500"}`}
+              >
+                <p className="text-sm font-semibold text-white">{plan.name}</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-400">₹{plan.monthlyPriceInr.toLocaleString("en-IN")}<span className="text-xs text-slate-400">/month</span></p>
+                <p className="mt-1 text-xs text-slate-400">{plan.idealFor}</p>
+                <ul className="mt-3 space-y-1 text-xs text-slate-300 list-disc list-inside">
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-800/50 glass p-6 space-y-4">
-          <div className="flex items-center gap-2 text-blue-400"><Calculator className="w-4 h-4" /> ROI Calculator</div>
-          <label className="text-sm text-slate-300 block">Current annual security spend (INR)</label>
-          <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" type="number" min={0} value={form.annualSecuritySpendInr} onChange={(e) => setForm({ ...form, annualSecuritySpendInr: Number(e.target.value) })} />
-          <label className="text-sm text-slate-300 block">Incidents per month</label>
-          <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" type="number" min={0} value={form.estimatedIncidentsPerMonth} onChange={(e) => setForm({ ...form, estimatedIncidentsPerMonth: Number(e.target.value) })} />
-          <button onClick={onRoiCalculate} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold">Calculate ROI</button>
+          <div className="flex items-center gap-2 text-blue-400"><Calculator className="w-4 h-4" /> ROI Calculator (Monthly)</div>
+          <label className="text-sm text-slate-300 block">Team size</label>
+          <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" type="number" min={1} value={teamSize} onChange={(e) => setTeamSize(Number(e.target.value))} />
+          <label className="text-sm text-slate-300 block">Current tooling cost per month (INR)</label>
+          <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" type="number" min={0} value={currentToolingCostInr} onChange={(e) => setCurrentToolingCostInr(Number(e.target.value))} />
+          <label className="text-sm text-slate-300 block">Selected EdgeShield plan</label>
+          <p className="text-sm text-white font-semibold">{selectedPlan.name} • ₹{selectedPlan.monthlyPriceInr.toLocaleString("en-IN")}/month</p>
+          <button onClick={onRoiCalculate} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold">Calculate Savings</button>
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-            <p className="text-xs text-emerald-300">Estimated annual savings</p>
-            <p className="text-2xl font-bold text-white">₹{roi.annualSavings.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-slate-400">Estimated ROI: {roi.roiPercent}%</p>
+            <p className="text-xs text-emerald-300">Estimated monthly savings</p>
+            <p className="text-2xl font-bold text-white">₹{roi.monthlySavings.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-slate-400">Annualized: ₹{roi.annualSavings.toLocaleString("en-IN")} • Estimated ROI: {roi.roiPercent}%</p>
           </div>
         </div>
 
         <form onSubmit={onSubmit} className="rounded-2xl border border-slate-800/50 glass p-6 space-y-3">
-          <div className="flex items-center gap-2 text-blue-400"><ShieldCheck className="w-4 h-4" /> Qualification Form</div>
+          <div className="flex items-center gap-2 text-blue-400"><ShieldCheck className="w-4 h-4" /> Book Demo Lead Form</div>
           <input required placeholder="Full name" className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
           <input required type="email" placeholder="Work email" className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.workEmail} onChange={(e) => setForm({ ...form, workEmail: e.target.value })} />
           <input required placeholder="Company" className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
@@ -137,21 +230,27 @@ export default function AssessmentPage() {
           </select>
           <textarea placeholder="Notes (optional)" className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           <input tabIndex={-1} autoComplete="off" className="hidden" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} aria-hidden />
-          <button disabled={status === "submitting"} className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold disabled:opacity-50">{status === "submitting" ? "Submitting..." : "Submit Assessment Request"}</button>
+          <button disabled={status === "submitting"} className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold disabled:opacity-50">{status === "submitting" ? "Submitting..." : "Book Demo"}</button>
+          <Link
+            href={`mailto:${SALES_EMAIL}?subject=Book%20EdgeShield%20Demo&body=Hi%20team%2C%20I%20want%20to%20book%20a%20demo.`}
+            className="inline-flex text-xs text-emerald-300 hover:text-emerald-200"
+          >
+            Fallback: email sales directly
+          </Link>
           {message && <p className={`text-sm ${status === "success" ? "text-emerald-400" : "text-amber-300"}`}>{message}</p>}
         </form>
       </section>
 
       <section className="rounded-2xl border border-slate-800/50 glass p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white">Book your assessment call</h2>
-          <p className="text-slate-400 text-sm">Prefer direct scheduling? Pick a slot with our solutions team.</p>
+          <h2 className="text-xl font-semibold text-white">Prefer direct scheduling?</h2>
+          <p className="text-slate-400 text-sm">Pick a slot with our solutions team.</p>
         </div>
         <Link
           href={BOOKING_URL}
           target="_blank"
           rel="noreferrer"
-          onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/assessment" })}
+          onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/assessment", selectedPlan: selectedPlan.name })}
           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold"
         >
           <CalendarCheck2 className="w-4 h-4" /> Book Assessment

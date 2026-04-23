@@ -11,7 +11,9 @@ import {
   ChevronRight,
   ShieldCheck,
   AlertTriangle,
-  Info
+  Info,
+  BadgeIndianRupee,
+  Calculator
 } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +23,24 @@ import { TrafficChart } from "@/components/TrafficChart";
 import { ThreatMap } from "@/components/ThreatMap";
 import { edgeShield, LogEntry } from "@/lib/edge-shield";
 import { trackEvent } from "@/lib/analytics";
+
+const INDIA_PLANS = [
+  {
+    name: "Starter SOC",
+    price: "₹69,999/mo",
+    features: ["Managed WAF + bot defense", "24x7 SOC triage", "Monthly risk report"],
+  },
+  {
+    name: "Growth Shield",
+    price: "₹1,49,999/mo",
+    features: ["DDoS + API protection", "SIEM integrations", "Priority response SLA"],
+  },
+  {
+    name: "Enterprise Fortress",
+    price: "₹3,29,999/mo",
+    features: ["Dedicated architect", "Compliance and audit support", "Custom SLA"],
+  },
+];
 
 export default function DashboardPage() {
   const [events, setEvents] = useState<LogEntry[]>(() => edgeShield.getRecentLogs(10));
@@ -207,6 +227,33 @@ export default function DashboardPage() {
             className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 transition-colors"
           >
             Check ROI & Pricing
+          </Link>
+        </div>
+      </section>
+
+      <section className="glass rounded-2xl p-6 border border-blue-500/20 bg-gradient-to-r from-slate-900/60 to-blue-950/30 space-y-5">
+        <div className="flex items-center gap-2 text-blue-300 text-xs font-bold uppercase tracking-widest">
+          <BadgeIndianRupee className="w-4 h-4" /> India Pricing + ROI
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {INDIA_PLANS.map((plan) => (
+            <div key={plan.name} className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
+              <p className="text-sm font-semibold text-white">{plan.name}</p>
+              <p className="text-lg font-bold text-emerald-400 mt-1">{plan.price}</p>
+              <ul className="mt-2 text-xs text-slate-300 space-y-1 list-disc list-inside">
+                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-slate-300 inline-flex items-center gap-2"><Calculator className="w-4 h-4 text-blue-400" />Use team size + current tooling cost to estimate monthly savings.</p>
+          <Link
+            href="/assessment"
+            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "india_pricing" })}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
+          >
+            Book Demo
           </Link>
         </div>
       </section>
