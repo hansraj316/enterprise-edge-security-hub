@@ -75,6 +75,25 @@ export default function DashboardPage() {
     };
   }, [teamSize, toolingCostInr, selectedPlan]);
 
+  const fallbackMailtoHref = useMemo(() => {
+    const subject = encodeURIComponent(`Book EdgeShield Demo - ${selectedPlan.name}`);
+    const body = encodeURIComponent(
+      [
+        "Hi EdgeShield team,",
+        "",
+        `Please schedule a demo for ${selectedPlan.name}.`,
+        `Name: ${quickLead.fullName || ""}`,
+        `Email: ${quickLead.workEmail || ""}`,
+        `Company: ${quickLead.company || ""}`,
+        `Team size: ${teamSize}`,
+        `Current monthly tooling cost: ₹${toolingCostInr.toLocaleString("en-IN")}`,
+        `Estimated monthly savings: ₹${roi.monthlySavings.toLocaleString("en-IN")}`,
+      ].join("\n"),
+    );
+
+    return `mailto:${SALES_EMAIL}?subject=${subject}&body=${body}`;
+  }, [quickLead, roi.monthlySavings, selectedPlan.name, teamSize, toolingCostInr]);
+
   function onRoiCalculate() {
     trackEvent("roi_calculated", {
       sourcePage: "/",
@@ -147,6 +166,10 @@ export default function DashboardPage() {
     } catch {
       setLeadStatus("error");
       setLeadMessage(`Lead endpoint unavailable. Use fallback email: ${SALES_EMAIL}`);
+
+      if (typeof window !== "undefined") {
+        window.location.href = fallbackMailtoHref;
+      }
     }
   }
 
@@ -386,7 +409,7 @@ export default function DashboardPage() {
             <button disabled={leadStatus === "submitting"} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors disabled:opacity-50">
               <CalendarCheck2 className="w-4 h-4" /> {leadStatus === "submitting" ? "Submitting..." : "Book Demo"}
             </button>
-            <Link href={`mailto:${SALES_EMAIL}?subject=Book%20EdgeShield%20Demo&body=Hi%20team%2C%20I%20want%20to%20book%20a%20demo.`} className="inline-flex text-xs text-emerald-300 hover:text-emerald-200">Fallback: email sales</Link>
+            <Link href={fallbackMailtoHref} className="inline-flex text-xs text-emerald-300 hover:text-emerald-200">Fallback: email sales</Link>
             {leadMessage && <p className={`text-xs ${leadStatus === "success" ? "text-emerald-300" : "text-amber-300"}`}>{leadMessage}</p>}
           </form>
         </div>

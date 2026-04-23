@@ -11,7 +11,7 @@
 - **AI Anomaly Detection**: Proactive zero-day attack prevention.
 - **Premium Dashboard**: Real-time visualization of security events.
 - **India Pricing + ROI**: 3 INR pricing tiers and a monthly savings calculator.
-- **Lead Capture CTA**: Home `Book Demo` posts to `/api/leads`, with mailto fallback.
+- **Lead Capture CTA**: Home `Book Demo` posts to `/api/leads`, with smart mailto fallback.
 
 ## Landing Conversion Module (India)
 Primary landing (`/`) now includes:
@@ -22,6 +22,7 @@ Primary landing (`/`) now includes:
   - Selected plan
 - Quick lead form (`Book Demo`) wired to `POST /api/leads`
 - Safe fallback CTA to sales email when lead endpoint is unavailable
+- Auto-fills fallback mailto with selected plan, lead details, and ROI context
 
 ### Screenshot
 ![India pricing + ROI section on home](./public/images/india-pricing-roi-home.png)
@@ -71,6 +72,7 @@ Create a `.env.local` file:
 
 ## Usage Notes (Pricing + Demo CTA)
 - Home page (`/`) includes full India pricing cards, ROI calculator, and quick lead-capture demo form.
+- If `/api/leads` is unavailable, `Book Demo` gracefully redirects to a prefilled sales mailto.
 - Assessment page (`/assessment`) contains:
   - Full INR pricing cards (3 plans)
   - Monthly ROI calculator (team size + current tooling cost)
