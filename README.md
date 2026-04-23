@@ -15,7 +15,7 @@
 
 ## Landing Conversion Module (India)
 Primary landing (`/`) now includes:
-- 3 India-specific plans in INR (`Starter SOC`, `Growth Shield`, `Enterprise Fortress`)
+- 3 India-specific plans in INR (`Starter`, `Growth`, `Enterprise`)
 - On-page monthly ROI calculator based on:
   - Team size
   - Current monthly tooling cost (INR)
@@ -34,15 +34,15 @@ Primary landing (`/`) now includes:
 
 ## India Pricing Strategy
 The assessment flow is optimized for Indian enterprise buyers with transparent monthly pricing:
-- **Starter SOC**: `₹69,999/month`
+- **Starter**: `₹69,999/month`
   - Managed WAF + bot defense
   - 24x7 SOC triage
   - Monthly risk reporting
-- **Growth Shield**: `₹1,49,999/month`
+- **Growth**: `₹1,49,999/month`
   - DDoS and API protection
   - SIEM integrations
   - Priority response SLA
-- **Enterprise Fortress**: `₹3,29,999/month`
+- **Enterprise**: `₹3,29,999/month`
   - Dedicated security architect
   - Compliance and audit support
   - Custom SLA

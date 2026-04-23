@@ -20,7 +20,7 @@ type PricingPlan = {
 
 const PRICING_PLANS: PricingPlan[] = [
   {
-    name: "Starter SOC",
+    name: "Starter",
     monthlyPriceInr: 69999,
     idealFor: "Fast-moving teams up to 50 members",
     features: [
@@ -30,21 +30,21 @@ const PRICING_PLANS: PricingPlan[] = [
     ],
   },
   {
-    name: "Growth Shield",
+    name: "Growth",
     monthlyPriceInr: 149999,
     idealFor: "Scaling teams with multi-region traffic",
     features: [
-      "Everything in Starter SOC",
+      "Everything in Starter",
       "DDoS burst protection + API security",
       "SIEM integrations and playbook tuning",
     ],
   },
   {
-    name: "Enterprise Fortress",
+    name: "Enterprise",
     monthlyPriceInr: 329999,
     idealFor: "Large enterprises with strict compliance",
     features: [
-      "Everything in Growth Shield",
+      "Everything in Growth",
       "Dedicated security architect",
       "Custom SLA, audit support, executive reporting",
     ],

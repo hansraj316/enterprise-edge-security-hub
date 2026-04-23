@@ -28,17 +28,17 @@ import { isWorkEmail, LeadPayload } from "@/lib/lead";
 
 const INDIA_PLANS = [
   {
-    name: "Starter SOC",
+    name: "Starter",
     price: "₹69,999/mo",
     features: ["Managed WAF + bot defense", "24x7 SOC triage", "Monthly risk report"],
   },
   {
-    name: "Growth Shield",
+    name: "Growth",
     price: "₹1,49,999/mo",
     features: ["DDoS + API protection", "SIEM integrations", "Priority response SLA"],
   },
   {
-    name: "Enterprise Fortress",
+    name: "Enterprise",
     price: "₹3,29,999/mo",
     features: ["Dedicated architect", "Compliance and audit support", "Custom SLA"],
   },
