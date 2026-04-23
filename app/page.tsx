@@ -36,6 +36,7 @@ const INDIA_PLANS = [
     name: "Growth",
     price: "₹1,49,999/mo",
     features: ["DDoS + API protection", "SIEM integrations", "Priority response SLA"],
+    highlight: "Most popular",
   },
   {
     name: "Enterprise",
@@ -102,6 +103,14 @@ export default function DashboardPage() {
       currentToolingCostInr: toolingCostInr,
       estimatedMonthlySavingsInr: roi.monthlySavings,
       estimatedRoiPercent: roi.roiPercent,
+    });
+  }
+
+  function onPlanSelect(planName: string) {
+    setSelectedPlanName(planName);
+    trackEvent("plan_selected", {
+      sourcePage: "/",
+      selectedPlan: planName,
     });
   }
 
@@ -378,14 +387,36 @@ export default function DashboardPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {INDIA_PLANS.map((plan) => (
-            <div key={plan.name} className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4">
-              <p className="text-sm font-semibold text-white">{plan.name}</p>
+            <div
+              key={plan.name}
+              className={cn(
+                "rounded-xl border p-4 transition-colors",
+                selectedPlan.name === plan.name
+                  ? "border-emerald-400/80 bg-emerald-500/10"
+                  : "border-slate-700/70 bg-slate-900/40",
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-white">{plan.name}</p>
+                {"highlight" in plan && plan.highlight ? (
+                  <span className="rounded-full border border-emerald-300/50 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
+                    {plan.highlight}
+                  </span>
+                ) : null}
+              </div>
               <p className="text-lg font-bold text-emerald-400 mt-1">{plan.price}</p>
               <ul className="mt-2 text-xs text-slate-300 space-y-1 list-disc list-inside">
                 {plan.features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
+              <button
+                type="button"
+                onClick={() => onPlanSelect(plan.name)}
+                className="mt-3 w-full rounded-lg border border-blue-400/40 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-200 hover:bg-blue-500/20"
+              >
+                Choose {plan.name}
+              </button>
             </div>
           ))}
         </div>
@@ -397,7 +428,7 @@ export default function DashboardPage() {
             <label className="text-xs text-slate-400">Current tooling cost per month (INR)</label>
             <input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" type="number" min={0} value={toolingCostInr} onChange={(e) => setToolingCostInr(Number(e.target.value) || 0)} />
             <label className="text-xs text-slate-400">Plan</label>
-            <select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" value={selectedPlan.name} onChange={(e) => setSelectedPlanName(e.target.value)}>
+            <select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" value={selectedPlan.name} onChange={(e) => onPlanSelect(e.target.value)}>
               {INDIA_PLANS.map((plan) => (
                 <option key={plan.name} value={plan.name}>{plan.name}</option>
               ))}

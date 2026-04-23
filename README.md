@@ -16,6 +16,7 @@
 ## Landing Conversion Module (India)
 Primary landing (`/`) now includes:
 - 3 India-specific plans in INR (`Starter`, `Growth`, `Enterprise`)
+- Click-to-select pricing cards that sync selected plan into ROI + Book Demo
 - On-page monthly ROI calculator based on:
   - Team size
   - Current monthly tooling cost (INR)

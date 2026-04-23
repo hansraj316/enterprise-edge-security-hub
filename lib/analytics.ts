@@ -1,4 +1,4 @@
-export type AssessmentEvent = "roi_calculated" | "lead_submitted" | "assessment_book_clicked";
+export type AssessmentEvent = "roi_calculated" | "lead_submitted" | "assessment_book_clicked" | "plan_selected";
 
 export function trackEvent(event: AssessmentEvent, properties: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
