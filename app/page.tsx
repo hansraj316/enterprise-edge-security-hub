@@ -29,18 +29,18 @@ import { isWorkEmail, LeadPayload } from "@/lib/lead";
 const INDIA_PLANS = [
   {
     name: "Starter",
-    price: "₹69,999/mo",
+    priceInr: 69999,
     features: ["Managed WAF + bot defense", "24x7 SOC triage", "Monthly risk report"],
   },
   {
     name: "Growth",
-    price: "₹1,49,999/mo",
+    priceInr: 149999,
     features: ["DDoS + API protection", "SIEM integrations", "Priority response SLA"],
     highlight: "Most popular",
   },
   {
     name: "Enterprise",
-    price: "₹3,29,999/mo",
+    priceInr: 329999,
     features: ["Dedicated architect", "Compliance and audit support", "Custom SLA"],
   },
 ];
@@ -48,6 +48,8 @@ const INDIA_PLANS = [
 const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL ?? "sales@example.com";
 
 type QuickLeadForm = Pick<LeadPayload, "fullName" | "workEmail" | "company">;
+
+const formatInr = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
 export default function DashboardPage() {
   const [events, setEvents] = useState<LogEntry[]>(() => edgeShield.getRecentLogs(10));
@@ -64,7 +66,7 @@ export default function DashboardPage() {
     const teamSavingsFactor = Math.min(0.42, 0.16 + teamSize * 0.0015);
     const platformSavings = Math.round(toolingCostInr * teamSavingsFactor);
     const operationsSavings = teamSize * 1200;
-    const selectedPlanPrice = Number(selectedPlan.price.replace(/[^\d]/g, ""));
+    const selectedPlanPrice = selectedPlan.priceInr;
     const planEfficiencyDelta = Math.max(0, toolingCostInr - selectedPlanPrice);
     const monthlySavings = Math.max(0, platformSavings + operationsSavings + Math.round(planEfficiencyDelta * 0.35));
     const roiPercent = Math.round((monthlySavings / Math.max(toolingCostInr, 1)) * 100);
@@ -77,7 +79,7 @@ export default function DashboardPage() {
   }, [teamSize, toolingCostInr, selectedPlan]);
 
   const fallbackMailtoHref = useMemo(() => {
-    const subject = encodeURIComponent(`Book EdgeShield Demo - ${selectedPlan.name}`);
+      const subject = encodeURIComponent(`Book EdgeShield Demo - ${selectedPlan.name}`);
     const body = encodeURIComponent(
       [
         "Hi EdgeShield team,",
@@ -404,7 +406,7 @@ export default function DashboardPage() {
                   </span>
                 ) : null}
               </div>
-              <p className="text-lg font-bold text-emerald-400 mt-1">{plan.price}</p>
+              <p className="text-lg font-bold text-emerald-400 mt-1">{formatInr(plan.priceInr)}/mo</p>
               <ul className="mt-2 text-xs text-slate-300 space-y-1 list-disc list-inside">
                 {plan.features.map((feature) => (
                   <li key={feature}>{feature}</li>
@@ -436,8 +438,8 @@ export default function DashboardPage() {
             <button onClick={onRoiCalculate} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors">Calculate Savings</button>
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <p className="text-xs text-emerald-300">Estimated monthly savings</p>
-              <p className="text-2xl font-bold text-white">₹{roi.monthlySavings.toLocaleString("en-IN")}</p>
-              <p className="text-xs text-slate-400">Annualized: ₹{roi.annualSavings.toLocaleString("en-IN")} • ROI: {roi.roiPercent}%</p>
+              <p className="text-2xl font-bold text-white">{formatInr(roi.monthlySavings)}</p>
+              <p className="text-xs text-slate-400">Annualized: {formatInr(roi.annualSavings)} • ROI: {roi.roiPercent}%</p>
             </div>
           </div>
 

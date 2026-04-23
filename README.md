@@ -74,6 +74,7 @@ Create a `.env.local` file:
 
 ## Usage Notes (Pricing + Demo CTA)
 - Home page (`/`) includes full India pricing cards, ROI calculator, and quick lead-capture demo form.
+- Pricing plans are stored as numeric INR values in code and rendered with `en-IN` locale formatting for display consistency.
 - If `/api/leads` is unavailable, `Book Demo` gracefully redirects to a prefilled sales mailto.
 - Assessment page (`/assessment`) contains:
   - Full INR pricing cards (3 plans)
