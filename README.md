@@ -20,6 +20,7 @@ Primary landing (`/`) now includes:
   - Team size
   - Current monthly tooling cost (INR)
   - Selected plan
+- Primary hero `Book Demo` CTA that jumps to the lead form on `/`
 - Quick lead form (`Book Demo`) wired to `POST /api/leads`
 - Safe fallback CTA to sales email when lead endpoint is unavailable
 - Auto-fills fallback mailto with selected plan, lead details, and ROI context

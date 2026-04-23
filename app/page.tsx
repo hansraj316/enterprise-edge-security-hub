@@ -201,13 +201,22 @@ export default function DashboardPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">Get your Edge ROI and custom hardening plan</h2>
             <p className="text-slate-300 text-sm mt-2">Calculate savings, qualify in minutes, and book a technical assessment.</p>
           </div>
-          <Link
-            href="/assessment"
-            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "hero" })}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
-          >
-            Start Assessment
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="#book-demo"
+              onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "hero-book-demo" })}
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 transition-colors"
+            >
+              Book Demo
+            </Link>
+            <Link
+              href="/assessment"
+              onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "hero" })}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
+            >
+              Start Assessment
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -363,7 +372,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="glass rounded-2xl p-6 border border-blue-500/20 bg-gradient-to-r from-slate-900/60 to-blue-950/30 space-y-5">
+      <section id="book-demo" className="glass rounded-2xl p-6 border border-blue-500/20 bg-gradient-to-r from-slate-900/60 to-blue-950/30 space-y-5">
         <div className="flex items-center gap-2 text-blue-300 text-xs font-bold uppercase tracking-widest">
           <BadgeIndianRupee className="w-4 h-4" /> India Pricing + ROI
         </div>
