@@ -201,13 +201,13 @@ export default function DashboardPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">Get your Edge ROI and custom hardening plan</h2>
             <p className="text-slate-300 text-sm mt-2">Calculate savings, qualify in minutes, and book a technical assessment.</p>
           </div>
-          <Link
-            href="/assessment"
-            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "hero" })}
+          <a
+            href="#book-demo"
+            onClick={() => trackEvent("book_demo_clicked", { sourcePage: "/", placement: "hero" })}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
           >
-            Start Assessment
-          </Link>
+            Book Demo
+          </a>
         </div>
       </section>
 
@@ -353,17 +353,17 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-white">Enterprise Pricing Fit Check</h3>
             <p className="text-sm text-slate-400">See if EdgeShield can cut your security spend by up to 67% with better SLA coverage.</p>
           </div>
-          <Link
-            href="/assessment"
-            onClick={() => trackEvent("assessment_book_clicked", { sourcePage: "/", placement: "pricing" })}
+          <a
+            href="#roi-calculator"
+            onClick={() => trackEvent("roi_section_clicked", { sourcePage: "/", placement: "pricing" })}
             className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 transition-colors"
           >
             Check ROI & Pricing
-          </Link>
+          </a>
         </div>
       </section>
 
-      <section className="glass rounded-2xl p-6 border border-blue-500/20 bg-gradient-to-r from-slate-900/60 to-blue-950/30 space-y-5">
+      <section id="roi-calculator" className="glass rounded-2xl p-6 border border-blue-500/20 bg-gradient-to-r from-slate-900/60 to-blue-950/30 space-y-5">
         <div className="flex items-center gap-2 text-blue-300 text-xs font-bold uppercase tracking-widest">
           <BadgeIndianRupee className="w-4 h-4" /> India Pricing + ROI
         </div>
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <form onSubmit={onQuickBookDemo} className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 space-y-3">
+          <form id="book-demo" onSubmit={onQuickBookDemo} className="rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 space-y-3">
             <p className="text-sm text-slate-300">Book Demo</p>
             <input required placeholder="Full name" value={quickLead.fullName} onChange={(e) => setQuickLead({ ...quickLead, fullName: e.target.value })} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" />
             <input required type="email" placeholder="Work email" value={quickLead.workEmail} onChange={(e) => setQuickLead({ ...quickLead, workEmail: e.target.value })} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm" />

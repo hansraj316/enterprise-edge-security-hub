@@ -100,6 +100,7 @@ Server-side wrapper sent to webhook:
 - [Architecture Overview](./docs/architecture/overview.md)
 - [Security Strategy](./docs/security/strategy.md)
 - [API Reference](./docs/api/endpoints.md)
+- [Go-To-Market Offer (Enterprise Pilot, India)](./docs/go-to-market/offer.md)
 
 ## Team
 - **Project Lead**: Master Hans
