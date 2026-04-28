@@ -69,6 +69,8 @@ Create a `.env.local` file:
 - `LEAD_WEBHOOK_RETRY_BASE_MS` (optional, default `500`)
 - `NEXT_PUBLIC_ASSESSMENT_BOOKING_URL` (optional, defaults to Calendly root)
 - `NEXT_PUBLIC_SALES_EMAIL` (optional, used by safe mailto fallback, default `sales@example.com`)
+- `ACTION_EXECUTION_MODE` (optional, defaults to `read-only`; must be `write-enabled` for delete/drop/overwrite operations)
+- `HUMAN_CONFIRMATION_TOKEN` (required for destructive actions; must be sent as `x-human-confirmation-token` header)
 
 ## Usage Notes (Pricing + Demo CTA)
 - Home page (`/`) includes full India pricing cards, ROI calculator, and quick lead-capture demo form.
@@ -95,6 +97,12 @@ Anti-spam fields:
 Server-side wrapper sent to webhook:
 - `type: "enterprise_assessment_lead"`
 - `submittedAt`, `ip`, `userAgent`, `payload`
+
+## Destructive Action Guardrails
+For any endpoint/action that can `delete`, `drop`, or `overwrite` data, use `lib/destructive-action-guardrails.ts`:
+- Read-only default: destructive actions blocked unless `ACTION_EXECUTION_MODE=write-enabled`
+- Protected env vars cannot be overridden from request payload `env`
+- Human confirmation is required via `x-human-confirmation-token`
 
 ## Documentation
 - [Architecture Overview](./docs/architecture/overview.md)
