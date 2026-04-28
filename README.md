@@ -112,3 +112,8 @@ Server-side wrapper sent to webhook:
 ## Daily TPM delivery update (2026-04-22)
 - Functional: Launch policy compliance dashboard with drift detection by edge cluster
 - Non-functional: Implement signed release artifacts and SBOM export in CI pipeline
+
+
+## Daily delivery update (2026-04-28)
+- Functional: Add policy drift detection dashboard across edge sites
+- Non-functional: Add continuous vulnerability scan ingestion health checks
