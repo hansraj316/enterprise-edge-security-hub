@@ -71,6 +71,9 @@ Create a `.env.local` file:
 - `LEAD_WEBHOOK_RETRY_BASE_MS` (optional, default `500`)
 - `NEXT_PUBLIC_ASSESSMENT_BOOKING_URL` (optional, defaults to Calendly root)
 - `NEXT_PUBLIC_SALES_EMAIL` (optional, used by safe mailto fallback, default `sales@example.com`)
+- `AI_SAFE_MODE` (optional, default `true`; when true, destructive autonomous actions require confirmation)
+- `AI_SAFE_CONFIRM_TOKEN` (required for destructive autonomous actions when `AI_SAFE_MODE=true`)
+- `AI_SAFE_BACKUP_DIR` (optional backup directory for autonomous action snapshots, default `./data/ai-safe-backups`)
 
 ## Usage Notes (Pricing + Demo CTA)
 - Home page (`/`) includes full India pricing cards, ROI calculator, and quick lead-capture demo form.
@@ -98,6 +101,12 @@ Anti-spam fields:
 Server-side wrapper sent to webhook:
 - `type: "enterprise_assessment_lead"`
 - `submittedAt`, `ip`, `userAgent`, `payload`
+
+## AI-safe mode for autonomous workflows
+- Endpoint: `POST /api/autonomous/workflow`
+- Always writes a JSON backup snapshot before queueing action execution.
+- If `destructive=true` and AI-safe mode is enabled, request must include `confirmationToken` matching `AI_SAFE_CONFIRM_TOKEN`.
+- Returns `403` with `ai_safe_confirmation_required` when destructive confirmations are missing/invalid.
 
 ## Documentation
 - [Architecture Overview](./docs/architecture/overview.md)
